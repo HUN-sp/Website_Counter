@@ -5,19 +5,25 @@ from ....schemas.counter import VisitCount
 
 router = APIRouter()
 
+# Create a single instance of VisitCounterService to maintain state
+_visit_counter_service = None
+
 # Dependency to get VisitCounterService instance
 def get_visit_counter_service():
-    return VisitCounterService()
+    global _visit_counter_service
+    if _visit_counter_service is None:
+        _visit_counter_service = VisitCounterService()
+    return _visit_counter_service
 
-@router.post("/visit/{page_id}")
+@router.post("/visit/{page_id}", response_model=VisitCount)
 async def record_visit(
     page_id: str,
     counter_service: VisitCounterService = Depends(get_visit_counter_service)
 ):
-    """Record a visit for a website"""
+    """Record a visit for a page and return the updated count"""
     try:
-        await counter_service.increment_visit(page_id)
-        return {"status": "success", "message": f"Visit recorded for page {page_id}"}
+        result = await counter_service.increment_visit(page_id)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -26,9 +32,9 @@ async def get_visits(
     page_id: str,
     counter_service: VisitCounterService = Depends(get_visit_counter_service)
 ):
-    """Get visit count for a website"""
+    """Get visit count for a page"""
     try:
-        count = await counter_service.get_visit_count(page_id)
-        return VisitCount(page_id=page_id, count=count)
+        result = await counter_service.get_visit_count(page_id)
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,36 +1,43 @@
-from typing import Dict, List, Any
-import asyncio
+from typing import Dict, Any
 from datetime import datetime
-from ..core.redis_manager import RedisManager
-
-
 
 class VisitCounterService:
-    def __init__(self):
-        """Initialize the visit counter service with an in-memory store"""
-        self.visit_counts: Dict[str, int] = {}  # In-memory dictionary
+    def __init__(self):  # Fixed: Changed _init_ to __init__
+        """Initialize the visit counter service with an in-memory dictionary"""
+        self._visit_counts: Dict[str, int] = {}  # In-memory storage for visit counts
 
-    #     def __init__(self):
-    #         """Initialize the visit counter service with Redis manager"""
-    #         self.redis_manager = RedisManager()
-    
-    async def increment_visit(self, page_id: str) -> None:
+    async def increment_visit(self, page_id: str) -> Dict[str, Any]:
         """
-        Increment visit count for a page.
-        
-        Args:
-            page_id: Unique identifier for the page
-        """
-        self.visit_counts[page_id] = self.visit_counts.get(page_id, 0) + 1  # Increment count
-
-    async def get_visit_count(self, page_id: str) -> int:
-        """
-        Get current visit count for a page.
+        Increment visit count for a page and return the response
         
         Args:
             page_id: Unique identifier for the page
             
         Returns:
-            Current visit count
+            Dictionary containing visit count and source
         """
-        return self.visit_counts.get(page_id, 0)  # Return count (default 0 if not found)
+        if page_id not in self._visit_counts:
+            self._visit_counts[page_id] = 0
+        
+        self._visit_counts[page_id] += 1
+        
+        return {
+            "visits": self._visit_counts[page_id],
+            "served_via": "in_memory"
+        }
+
+    async def get_visit_count(self, page_id: str) -> Dict[str, Any]:
+        """
+        Get current visit count for a page
+        
+        Args:
+            page_id: Unique identifier for the page
+            
+        Returns:
+            Dictionary containing visit count and source
+        """
+        count = self._visit_counts.get(page_id, 0)
+        return {
+            "visits": count,
+            "served_via": "in_memory"
+        }

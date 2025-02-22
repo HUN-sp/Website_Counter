@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Dict, List, Any
+from pydantic import BaseModel
+from typing import Dict, Any
 
 class VisitCount(BaseModel):
-    page_id: str
-    count: int
+    visits: int
+    served_via: str

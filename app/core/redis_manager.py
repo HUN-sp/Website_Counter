@@ -4,7 +4,7 @@ from .consistent_hash import ConsistentHash
 from .config import settings
 
 class RedisManager:
-    def __init__(self):
+    def _init_(self):
         """Initialize Redis connection pools and consistent hashing"""
         self.connection_pools: Dict[str, redis.ConnectionPool] = {}
         self.redis_clients: Dict[str, redis.Redis] = {}
